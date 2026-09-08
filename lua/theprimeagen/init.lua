@@ -33,7 +33,7 @@ autocmd('TextYankPost', {
     group = yank_group,
     pattern = '*',
     callback = function()
-        vim.highlight.on_yank({
+        (vim.hl or vim.highlight).on_yank({
             higroup = 'IncSearch',
             timeout = 40,
         })
@@ -43,8 +43,26 @@ autocmd('TextYankPost', {
 autocmd({"BufWritePre"}, {
     group = ThePrimeagenGroup,
     pattern = "*",
-    command = [[%s/\s\+$//e]],
+    callback = function()
+        if vim.bo.modifiable and not vim.bo.readonly then
+            local save_cursor = vim.fn.getpos(".")
+            vim.cmd([[%s/\s\+$//e]])
+            vim.fn.setpos(".", save_cursor)
+        end
+    end,
 })
+
+autocmd('BufEnter', {
+    group = ThePrimeagenGroup,
+    callback = function()
+        if vim.bo.filetype == "zig" then
+            pcall(vim.cmd.colorscheme, "tokyonight-night")
+        else
+            pcall(vim.cmd.colorscheme, "rose-pine-moon")
+        end
+    end
+})
+
 
 autocmd('LspAttach', {
     group = ThePrimeagenGroup,
@@ -58,8 +76,20 @@ autocmd('LspAttach', {
         vim.keymap.set("n", "<leader>vrr", function() vim.lsp.buf.references() end, opts)
         vim.keymap.set("n", "<leader>vrn", function() vim.lsp.buf.rename() end, opts)
         vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts)
-        vim.keymap.set("n", "[d", function() vim.diagnostic.goto_next() end, opts)
-        vim.keymap.set("n", "]d", function() vim.diagnostic.goto_prev() end, opts)
+        vim.keymap.set("n", "[d", function()
+            if vim.diagnostic.jump then
+                vim.diagnostic.jump({ count = -1, float = true })
+            else
+                vim.diagnostic.goto_prev()
+            end
+        end, opts)
+        vim.keymap.set("n", "]d", function()
+            if vim.diagnostic.jump then
+                vim.diagnostic.jump({ count = 1, float = true })
+            else
+                vim.diagnostic.goto_next()
+            end
+        end, opts)
     end
 })
 

@@ -29,12 +29,37 @@ return {
                 "lua_ls",
                 "rust_analyzer",
                 "gopls",
+                "clangd",
             },
             handlers = {
                 function(server_name) -- default handler (optional)
                     require("lspconfig")[server_name].setup {
                         capabilities = capabilities
                     }
+                end,
+
+                ["clangd"] = function()
+                    local lspconfig = require("lspconfig")
+                    local clangd_capabilities = vim.tbl_deep_extend("force", {}, capabilities, {
+                        offsetEncoding = { "utf-16" },
+                    })
+                    lspconfig.clangd.setup({
+                        capabilities = clangd_capabilities,
+                        cmd = {
+                            "clangd",
+                            "--background-index",
+                            "--clang-tidy",
+                            "--header-insertion=iwyu",
+                            "--completion-style=detailed",
+                            "--function-arg-placeholders",
+                            "--fallback-style=llvm",
+                        },
+                        init_options = {
+                            usePlaceholders = true,
+                            completeUnimported = true,
+                            clangdFileStatus = true,
+                        },
+                    })
                 end,
 
                 zls = function()
@@ -51,18 +76,33 @@ return {
                     })
                     vim.g.zig_fmt_parse_errors = 0
                     vim.g.zig_fmt_autosave = 0
-
                 end,
                 ["lua_ls"] = function()
                     local lspconfig = require("lspconfig")
+
                     lspconfig.lua_ls.setup {
                         capabilities = capabilities,
                         settings = {
                             Lua = {
-                                runtime = { version = "Lua 5.1" },
+                                runtime = {
+                                    version = 'LuaJIT',
+                                },
                                 diagnostics = {
-                                    globals = { "bit", "vim", "it", "describe", "before_each", "after_each" },
-                                }
+                                    globals = { 'vim' },
+                                },
+                                workspace = {
+                                    library = vim.api.nvim_get_runtime_file("", true),
+                                    checkThirdParty = false,
+                                },
+                                format = {
+                                    enable = true,
+                                    -- Put format options here
+                                    -- NOTE: the value should be STRING!!
+                                    defaultConfig = {
+                                        indent_style = "space",
+                                        indent_size = "2",
+                                    }
+                                },
                             }
                         }
                     }
