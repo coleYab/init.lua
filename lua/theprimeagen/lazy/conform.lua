@@ -3,13 +3,17 @@ return {
 	opts = {},
 	config = function()
 		require("conform").setup({
-			format_on_save = {
-				timeout_ms = 5000,
-                lsp_format = "fallback",
-			},
+			format_on_save = function(bufnr)
+				local ignore_filetypes = { "c", "cpp" }
+				if vim.tbl_contains(ignore_filetypes, vim.bo[bufnr].filetype) then
+					return
+				end
+				return {
+					timeout_ms = 5000,
+					lsp_format = "fallback",
+				}
+			end,
 			formatters_by_ft = {
-				c = { "clang-format" },
-				cpp = { "clang-format" },
 				lua = { "stylua" },
 				go = { "gofmt" },
 				odin = { "odinfmt" },
@@ -17,11 +21,6 @@ return {
 				typescript = { "prettier" },
 				json = { "prettier" },
 				elixir = { "mix" },
-			},
-			formatters = {
-				["clang-format"] = {
-					prepend_args = { "-style=file", "-fallback-style=LLVM" },
-				},
 			},
 		})
 

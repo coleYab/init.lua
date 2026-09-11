@@ -55,6 +55,7 @@ return {
                 height = 0.5,
                 show_nu = true,
                 show_rnu = false,
+                open_when_compilation_fails = true,
             },
         },
         popup_ui = {
@@ -88,7 +89,7 @@ return {
         compile_directory = ".",
         compile_command = {
             c = { exec = "gcc", args = { "-Wall", "$(FNAME)", "-o", "$(FNOEXT)" } },
-            cpp = { exec = "g++", args = { "-Wall", "$(FNAME)", "-o", "$(FNOEXT)" } },
+            cpp = { exec = "g++", args = { "-Wall", "-O2", "-std=c++20", "$(FNAME)", "-o", "$(FNOEXT)" } },
             rust = { exec = "rustc", args = { "$(FNAME)" } },
             java = { exec = "javac", args = { "$(FNAME)" } },
         },

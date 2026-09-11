@@ -45,6 +45,10 @@ return {
                     })
                     lspconfig.clangd.setup({
                         capabilities = clangd_capabilities,
+                        on_attach = function(client, bufnr)
+                            client.server_capabilities.documentFormattingProvider = false
+                            client.server_capabilities.documentRangeFormattingProvider = false
+                        end,
                         cmd = {
                             "clangd",
                             "--background-index",
